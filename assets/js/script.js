@@ -10,6 +10,7 @@ let nextId = JSON.parse(localStorage.getItem("nextId"));
 const submitTaskButtonEl = document.getElementById("submitTaskButton");
 const inputTaskTitleEl = document.getElementById("inputTaskTitle");
 const inputDateEl = document.getElementById("inputDate");
+const todoEl = document.getElementById("todo-cards");
 const inpu1tContentEl = document.getElementById("inpu1tContent");
 const formModalEl = document.getElementById("formModal");
 
@@ -22,8 +23,46 @@ function generateTaskId() {
 // Todo: create a function to create a task card
 function createTaskCard(task) {
     const taskCard = document.createElement('div');
-    document.body.appendChild(taskCard);
+    taskCard.classList.add('card');
+    taskCard.classList.add('text-center');
+    const taskCardBody = document.createElement('div');
+    taskCardBody.classList.add('card-body');
+    
+    const taskHeader = document.createElement('h5');
+    taskHeader.classList.add('card-title');
+    taskHeader.classList.add('h1');
+
+    taskHeader.innerText = task.title;    
+    
+    
+    const taskContent = document.createElement('p');
+    taskContent.classList.add('card-text');
+    taskContent.innerText = task.content; 
+
+
+    const taskDueDate = document.createElement('p');
+    taskDueDate.classList.add('card-text');
+    taskDueDate.innerText = task.date; 
+
+    const buttonDeleteEl = document.createElement('button');
+    buttonDeleteEl.classList.add('btn');
+    buttonDeleteEl.classList.add('btn-primary');
+    buttonDeleteEl.innerText = "Delete"; 
+    
+    todoEl.appendChild(taskCard);
+    taskCard.appendChild(taskCardBody);
+    taskCardBody.appendChild(taskHeader);
+    taskCardBody.appendChild(taskContent);
+    taskCardBody.appendChild(taskDueDate);
+    taskCardBody.appendChild(buttonDeleteEl);
+
+
+    buttonDeleteEl.addEventListener('click', handleDeleteTask);
 }
+
+
+
+
 
 // Todo: create a function to render the task list and make cards draggable
 function renderTaskList() {
@@ -49,6 +88,8 @@ function handleAddTask(event){
 
 // Todo: create a function to handle deleting a task
 function handleDeleteTask(event){
+    console.log(event.currentTarget.parentElement);
+    event.currentTarget.parentElement.remove();
 
 }
 
