@@ -4,6 +4,25 @@ let nextId = JSON.parse(localStorage.getItem("nextId"));
 
 let currentId = 0;
 
+let tasks = [];
+let storedTasks = JSON.parse(localStorage.getItem('tasks'));
+
+let storedId = parseInt(JSON.parse(localStorage.getItem('nextId')))  
+
+if (storedId > 0){
+    currentId = storedId
+}
+console.log(currentId);
+// console.log(typeof(storedId));
+// if(typeof(storedId) === "number" && storedId != NaN){
+//     currentId = storedId;
+// }
+
+// if (currentId == null){
+//     currentId = 0;
+// } 
+// console.log(currentId);
+
 
 
 // const addTaskButtonEl = document.querySelector('#addButton')
@@ -13,6 +32,8 @@ const submitTaskButtonEl = document.getElementById("submitTaskButton");
 const inputTaskTitleEl = document.getElementById("inputTaskTitle");
 const inputDateEl = document.getElementById("inputDate");
 const todoEl = document.getElementById("todo-cards");
+
+
 const inpu1tContentEl = document.getElementById("inpu1tContent");
 const formModalEl = document.getElementById("formModal");
 const inProgressCardsEl = document.getElementById("in-progress-cards");
@@ -20,6 +41,7 @@ const inProgressCardsEl = document.getElementById("in-progress-cards");
 const todoContEl = document.getElementById("to-do");
 const inprogressEl = document.getElementById("in-progress");
 const doneEl = document.getElementById("done");
+const doneCardsEl = document.getElementById("done-cards");
 
 // Todo: create a function to generate a unique task id
 function generateTaskId() {
@@ -27,24 +49,23 @@ function generateTaskId() {
     return currentId;
 }
 
-
-// function drag(event){
-// }
-
 function getTaskBackgroundColor(task){
     const taskDate = task.date;
     const todayDate = dayjs();
     const dateDiff = todayDate.diff(taskDate, 'day');
     // console.log(dateDiff);
-    if (dateDiff > 0){
+
+    
+
+
+    if (dateDiff > 0 && task.status != "done"){
         return "taskBackgroundRed";
-    }else if(dateDiff <= 0 && dateDiff >= -7){
+    }else if(dateDiff <= 0 && dateDiff >= -7 && task.status != "done"){
         return "taskBackgroundYellow";
     }else{
         return "taskBackgroundWhite";
     }
 }
-
 
 // Todo: create a function to create a task card
 function createTaskCard(task) {
@@ -54,7 +75,7 @@ function createTaskCard(task) {
     taskCard.classList.add(taskBackgroundColor);
     taskCard.classList.add('text-center');
     taskCard.setAttribute("draggable", "true");
-    taskCard.setAttribute("id", "task" + generateTaskId());
+    taskCard.setAttribute("id", "task" + task.id);
     // taskCard.setAttribute("ondragstart", "drag(event)")
     const taskCardBody = document.createElement('div');
     taskCardBody.classList.add('card-body');
@@ -82,7 +103,16 @@ function createTaskCard(task) {
     buttonDeleteEl.classList.add('btn-primary');
     buttonDeleteEl.innerText = "Delete"; 
     
-    todoEl.appendChild(taskCard);
+
+    if (task.status === "to-do"){
+        todoEl.appendChild(taskCard);
+    }else if (task.status === "in-progress"){
+        inProgressCardsEl.appendChild(taskCard);
+    }else if(task.status === "done"){
+        doneCardsEl.appendChild(taskCard);
+    }
+    
+
     taskCard.appendChild(taskCardBody);
     taskCardBody.appendChild(taskHeader);
     taskCardBody.appendChild(taskContent);
@@ -102,7 +132,7 @@ function createTaskCard(task) {
 
 
 function mouseDrag({ movementX, movementY }, event){
-    console.log("her");
+    // console.log("her");
     el = event.currentTarget;
     let getContainerStyle = window.getComputedStyle(el);
     let leftValue = parseInt(getContainerStyle.left);
@@ -116,14 +146,34 @@ function mouseDrag({ movementX, movementY }, event){
 
 // Todo: create a function to render the task list and make cards draggable
 function renderTaskList() {
+    // console.log(storedTasks);
+    if (storedTasks != null){
+        for(let i=0; i<storedTasks.length; i++){
+            currentTask = storedTasks[i];
+            tasks.push(currentTask);
+            createTaskCard(currentTask);
 
-}
+            // if (scurrentTask.status === "todo"){
+            //     todoContEl.appendChild();
+            // }
+
+
+        }
+
+
+    }
+
+
+
+
+
+}   
 
 // Todo: create a function to handle adding a new task
 function handleAddTask(event){
     event.preventDefault();
-    console.log(inputDateEl.value);
-    console.log(inpu1tContentEl.value);
+    // console.log(inputDateEl.value);
+    // console.log(inpu1tContentEl.value);
     
 
     $('#formModal').modal('hide');
@@ -131,12 +181,19 @@ function handleAddTask(event){
     const task = {
         title : inputTaskTitleEl.value,
         date : inputDateEl.value,
-        content: inpu1tContentEl.value
+        content: inpu1tContentEl.value,
+        status: "to-do",
+        id : generateTaskId()
     };
 
     inputTaskTitleEl.value = "";
     inputDateEl.value = "";
     inpu1tContentEl.value = "";
+
+    tasks.push(task);
+    localStorage.setItem('tasks',JSON.stringify(tasks));
+    localStorage.setItem('nextId',JSON.stringify(currentId));
+
 
     createTaskCard(task);
 }
@@ -144,33 +201,78 @@ function handleAddTask(event){
 // Todo: create a function to handle deleting a task
 function handleDeleteTask(event){
     // console.log(event.currentTarget.parentElement);
-    event.currentTarget.parentElement.remove();
+    let elementId = event.currentTarget.parentElement.parentElement.id;
+    elementId = elementId.split("task")[1];
+    event.currentTarget.parentElement.parentElement.remove();
+
+    for(let i=0; i< tasks.length; i++){
+        if(tasks[i].id == elementId){
+            tasks.splice(i, 1, );
+        }
+    }
+    localStorage.setItem('tasks',JSON.stringify(tasks));
 
 }
 
 // Todo: create a function to handle dropping a task into a new status lane
 function handleDrop(event) {
     event.preventDefault();
-    console.log("here");
+    // console.log("here");
     // console.log(event.currentTarget);
     // console.log(event.dataTransfer.getData());
     var data = event.dataTransfer.getData("html");
-    console.log(data);
-    console.log(typeof(data));
+    // console.log(data);
+    // console.log(typeof(data));
     const droppedTaskEl = document.getElementById(data);
-    console.log(event.currentTarget.children[1].children[0].appendChild(droppedTaskEl));
+    // droppedTaskEl.classList.add("taskBackgroundWhite");
+
+    event.currentTarget.children[1].children[0].appendChild(droppedTaskEl)
+    const newStatus = event.currentTarget.id;
+    // console.log(data);
+    for(let i=0; i<tasks.length; i++){
+        // console.log(tasks[i].id);
+        if ("task" + tasks[i].id == data){
+            // console.log("here");
+            // console.log(event.currentTarget);
+            tasks[i].status = newStatus;
+            // console.log(tasks[i]);
+        }
+        if (tasks[i].status == "done"){
+            droppedTaskEl.classList.add("taskBackgroundWhite");
+        }else{
+            try {
+                droppedTaskEl.classList.remove("taskBackgroundWhite");
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }
+    localStorage.setItem('tasks',JSON.stringify(tasks));
+
+    // console.log(event.currentTarget.children[1].children[0].appendChild(droppedTaskEl));
     // event.currentTarget.children[1].children.appendChild(droppedTaskEl);
     // appendChild(droppedTaskEl);
     // event.currentTarget.appendChild(ui);
 }
+
+function taskDone(event){
+    event.preventDefault();
+    var data = event.dataTransfer.getData("html");
+    const droppedTaskEl = document.getElementById(data);
+    droppedTaskEl.classList.add("taskBackgroundWhite");
+}
+
+
 // addTaskButtonEl.addEventListener('click', handleAddTask);
 // Todo: when the page loads, render the task list, add event listeners, make lanes droppable, and make the due date field a date picker
 $(document).ready(function () {
-
+   
+    renderTaskList();
     formModalEl.addEventListener('submit', handleAddTask);
     todoContEl.addEventListener('drop', handleDrop);
     inprogressEl.addEventListener('drop', handleDrop);
     doneEl.addEventListener('drop', handleDrop);
+    // doneEl.addEventListener('drop', taskDone);
     
 });
 
