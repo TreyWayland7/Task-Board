@@ -19,7 +19,20 @@ body {
 
 .cardBackground{
   width: 100%;
-  
+
+}
+
+
+.taskBackgroundRed{
+  background-color: red;
+}
+
+.taskBackgroundYellow{
+  background-color: yellow;
+}
+
+.taskBackgroundWhite{
+  background-color: white;
 }
 
 
