@@ -1,62 +1,36 @@
-// Retrieve tasks and nextId from localStorage
-let taskList = JSON.parse(localStorage.getItem("tasks"));
-let nextId = JSON.parse(localStorage.getItem("nextId"));
-
-let currentId = 0;
-
-let tasks = [];
-let storedTasks = JSON.parse(localStorage.getItem('tasks'));
-
-let storedId = parseInt(JSON.parse(localStorage.getItem('nextId')))  
-
-if (storedId > 0){
-    currentId = storedId
-}
-console.log(currentId);
-// console.log(typeof(storedId));
-// if(typeof(storedId) === "number" && storedId != NaN){
-//     currentId = storedId;
-// }
-
-// if (currentId == null){
-//     currentId = 0;
-// } 
-// console.log(currentId);
-
-
-
-// const addTaskButtonEl = document.querySelector('#addButton')
-// const modalEl = document.querySelector('#modal')
-// const modalEl = document.getElementById("modal");
 const submitTaskButtonEl = document.getElementById("submitTaskButton");
 const inputTaskTitleEl = document.getElementById("inputTaskTitle");
 const inputDateEl = document.getElementById("inputDate");
 const todoEl = document.getElementById("todo-cards");
-
-
 const inpu1tContentEl = document.getElementById("inpu1tContent");
 const formModalEl = document.getElementById("formModal");
 const inProgressCardsEl = document.getElementById("in-progress-cards");
-
 const todoContEl = document.getElementById("to-do");
 const inprogressEl = document.getElementById("in-progress");
 const doneEl = document.getElementById("done");
 const doneCardsEl = document.getElementById("done-cards");
+let taskList = JSON.parse(localStorage.getItem("tasks"));
+let nextId = JSON.parse(localStorage.getItem("nextId"));
+let storedTasks = JSON.parse(localStorage.getItem('tasks'));
+let storedId = parseInt(JSON.parse(localStorage.getItem('nextId')))  
+let currentId = 0;
+let tasks = [];
 
-// Todo: create a function to generate a unique task id
+if (storedId > 0){
+    currentId = storedId
+}
+
+// generates a unquie ID
 function generateTaskId() {
     currentId += 1;
     return currentId;
 }
 
+// helper function to return background class givin a task
 function getTaskBackgroundColor(task){
     const taskDate = task.date;
     const todayDate = dayjs();
     const dateDiff = todayDate.diff(taskDate, 'day');
-    // console.log(dateDiff);
-
-    
-
 
     if (dateDiff > 0 && task.status != "done"){
         return "taskBackgroundRed";
@@ -67,43 +41,38 @@ function getTaskBackgroundColor(task){
     }
 }
 
-// Todo: create a function to create a task card
+// creates html for a new task card
 function createTaskCard(task) {
     const taskBackgroundColor = getTaskBackgroundColor(task);
+    // div container
     const taskCard = document.createElement('div');
     taskCard.classList.add('card');
     taskCard.classList.add(taskBackgroundColor);
     taskCard.classList.add('text-center');
     taskCard.setAttribute("draggable", "true");
     taskCard.setAttribute("id", "task" + task.id);
-    // taskCard.setAttribute("ondragstart", "drag(event)")
+    // div body
     const taskCardBody = document.createElement('div');
     taskCardBody.classList.add('card-body');
-    
+    // card header
     const taskHeader = document.createElement('h5');
     taskHeader.classList.add('card-title');
     taskHeader.classList.add('h1');
-
     taskHeader.innerText = task.title;    
-    
-    
+    // card content    
     const taskContent = document.createElement('p');
     taskContent.classList.add('card-text');
     taskContent.innerText = task.content; 
-
-
+    // card due date
     const taskDueDate = document.createElement('p');
     taskDueDate.classList.add('card-text');
-    // taskDueDate.innerText = task.date;
     taskDueDate.innerText = dayjs(task.date).format('dddd, MMMM D YYYY');
-    // task.date; 
-
+    // card delete button
     const buttonDeleteEl = document.createElement('button');
     buttonDeleteEl.classList.add('btn');
     buttonDeleteEl.classList.add('btn-primary');
     buttonDeleteEl.innerText = "Delete"; 
-    
-
+    // append the card depending on its status
     if (task.status === "to-do"){
         todoEl.appendChild(taskCard);
     }else if (task.status === "in-progress"){
@@ -111,73 +80,32 @@ function createTaskCard(task) {
     }else if(task.status === "done"){
         doneCardsEl.appendChild(taskCard);
     }
-    
-
+    // append the rest of the elements
     taskCard.appendChild(taskCardBody);
     taskCardBody.appendChild(taskHeader);
     taskCardBody.appendChild(taskContent);
     taskCardBody.appendChild(taskDueDate);
     taskCardBody.appendChild(buttonDeleteEl);
-
-
     buttonDeleteEl.addEventListener('click', handleDeleteTask);
-
-    // taskCard.addEventListener("mousedown", () =>{
-    //     this.addEventListener("mousmove", mouseDrag)
-    // })
-
-    // taskCard.addEventListener("mousedown", mouseDrag);
-
 }
 
-
-function mouseDrag({ movementX, movementY }, event){
-    // console.log("her");
-    el = event.currentTarget;
-    let getContainerStyle = window.getComputedStyle(el);
-    let leftValue = parseInt(getContainerStyle.left);
-    let topValue = parseInt(getContainerStyle.top);
-    el.style.left = `${leftValue + movementX}px`;
-    el.style.top = `${topValue + movementY}px`;
-}
-
-
-
-
-// Todo: create a function to render the task list and make cards draggable
+// renders the task list on reloads
 function renderTaskList() {
-    // console.log(storedTasks);
     if (storedTasks != null){
         for(let i=0; i<storedTasks.length; i++){
             currentTask = storedTasks[i];
             tasks.push(currentTask);
             createTaskCard(currentTask);
-
-            // if (scurrentTask.status === "todo"){
-            //     todoContEl.appendChild();
-            // }
-
-
         }
-
-
     }
-
-
-
-
-
 }   
 
-// Todo: create a function to handle adding a new task
+// adds a new task
 function handleAddTask(event){
     event.preventDefault();
-    // console.log(inputDateEl.value);
-    // console.log(inpu1tContentEl.value);
-    
-
+    // hide the form modal
     $('#formModal').modal('hide');
-
+    // create new task object
     const task = {
         title : inputTaskTitleEl.value,
         date : inputDateEl.value,
@@ -185,57 +113,46 @@ function handleAddTask(event){
         status: "to-do",
         id : generateTaskId()
     };
-
+    // zero out old default values
     inputTaskTitleEl.value = "";
     inputDateEl.value = "";
     inpu1tContentEl.value = "";
-
+    // push new task to list
     tasks.push(task);
+    // save to local storage
     localStorage.setItem('tasks',JSON.stringify(tasks));
     localStorage.setItem('nextId',JSON.stringify(currentId));
-
-
+    // create html for the new task
     createTaskCard(task);
 }
 
-// Todo: create a function to handle deleting a task
+// deletes task from dom and local storage
 function handleDeleteTask(event){
-    // console.log(event.currentTarget.parentElement);
     let elementId = event.currentTarget.parentElement.parentElement.id;
     elementId = elementId.split("task")[1];
+    // delete task in html
     event.currentTarget.parentElement.parentElement.remove();
-
+    // delete task in local storage
     for(let i=0; i< tasks.length; i++){
         if(tasks[i].id == elementId){
             tasks.splice(i, 1, );
         }
     }
     localStorage.setItem('tasks',JSON.stringify(tasks));
-
 }
 
-// Todo: create a function to handle dropping a task into a new status lane
+// hanlds the drop task feature
 function handleDrop(event) {
     event.preventDefault();
-    // console.log("here");
-    // console.log(event.currentTarget);
-    // console.log(event.dataTransfer.getData());
+    // append task to new bucket
     var data = event.dataTransfer.getData("html");
-    // console.log(data);
-    // console.log(typeof(data));
     const droppedTaskEl = document.getElementById(data);
-    // droppedTaskEl.classList.add("taskBackgroundWhite");
-
     event.currentTarget.children[1].children[0].appendChild(droppedTaskEl)
+   // change status of task
     const newStatus = event.currentTarget.id;
-    // console.log(data);
     for(let i=0; i<tasks.length; i++){
-        // console.log(tasks[i].id);
         if ("task" + tasks[i].id == data){
-            // console.log("here");
-            // console.log(event.currentTarget);
             tasks[i].status = newStatus;
-            // console.log(tasks[i]);
         }
         if (tasks[i].status == "done"){
             droppedTaskEl.classList.add("taskBackgroundWhite");
@@ -248,13 +165,9 @@ function handleDrop(event) {
         }
     }
     localStorage.setItem('tasks',JSON.stringify(tasks));
-
-    // console.log(event.currentTarget.children[1].children[0].appendChild(droppedTaskEl));
-    // event.currentTarget.children[1].children.appendChild(droppedTaskEl);
-    // appendChild(droppedTaskEl);
-    // event.currentTarget.appendChild(ui);
 }
 
+// adds a white background to done tasks
 function taskDone(event){
     event.preventDefault();
     var data = event.dataTransfer.getData("html");
@@ -262,25 +175,17 @@ function taskDone(event){
     droppedTaskEl.classList.add("taskBackgroundWhite");
 }
 
-
-// addTaskButtonEl.addEventListener('click', handleAddTask);
-// Todo: when the page loads, render the task list, add event listeners, make lanes droppable, and make the due date field a date picker
 $(document).ready(function () {
-   
     renderTaskList();
     formModalEl.addEventListener('submit', handleAddTask);
     todoContEl.addEventListener('drop', handleDrop);
     inprogressEl.addEventListener('drop', handleDrop);
     doneEl.addEventListener('drop', handleDrop);
-    // doneEl.addEventListener('drop', taskDone);
-    
 });
 
 document.addEventListener("dragover", function(event) {
     event.preventDefault();
   });
-
-
-  document.addEventListener("dragstart", function(event) {
+    document.addEventListener("dragstart", function(event) {
     event.dataTransfer.setData("html", event.target.id);
 });
