@@ -1,14 +1,13 @@
-const submitTaskButtonEl = document.getElementById("submitTaskButton");
-const inputTaskTitleEl = document.getElementById("inputTaskTitle");
-const inputDateEl = document.getElementById("inputDate");
-const todoEl = document.getElementById("todo-cards");
-const inpu1tContentEl = document.getElementById("inpu1tContent");
-const formModalEl = document.getElementById("formModal");
-const inProgressCardsEl = document.getElementById("in-progress-cards");
-const todoContEl = document.getElementById("to-do");
-const inprogressEl = document.getElementById("in-progress");
-const doneEl = document.getElementById("done");
-const doneCardsEl = document.getElementById("done-cards");
+const inputTaskTitleEl = $('#inputTaskTitle');
+const inputDateEl = $('#inputDate');
+const todoEl = $('#todo-cards');
+const inpu1tContentEl = $('#inpu1tContent');
+const formModalEl = $('#formModal');
+const inProgressCardsEl = $('#in-progress-cards');
+const todoContEl = $('#to-do');
+const inprogressEl = $('#in-progress');
+const doneEl = $('#done');
+const doneCardsEl = $('#done-cards');
 let taskList = JSON.parse(localStorage.getItem("tasks"));
 let nextId = JSON.parse(localStorage.getItem("nextId"));
 let storedTasks = JSON.parse(localStorage.getItem('tasks'));
@@ -45,48 +44,52 @@ function getTaskBackgroundColor(task){
 function createTaskCard(task) {
     const taskBackgroundColor = getTaskBackgroundColor(task);
     // div container
-    const taskCard = document.createElement('div');
-    taskCard.classList.add('card');
-    taskCard.classList.add(taskBackgroundColor);
-    taskCard.classList.add('text-center');
-    taskCard.setAttribute("draggable", "true");
-    taskCard.setAttribute("id", "task" + task.id);
+    const taskCard = $('<div>');
+    taskCard.addClass('card');
+    taskCard.addClass(taskBackgroundColor);
+    taskCard.addClass('text-center');
+    taskCard.draggable({
+        snap: false,
+        revert: true
+    });
+    taskCard.css( "zIndex", 2 );
+    taskCard.attr("id", "task" + task.id);
     // div body
-    const taskCardBody = document.createElement('div');
-    taskCardBody.classList.add('card-body');
+    const taskCardBody = $('<div>');
+    taskCardBody.addClass('card-body');
     // card header
-    const taskHeader = document.createElement('h5');
-    taskHeader.classList.add('card-title');
-    taskHeader.classList.add('h1');
-    taskHeader.innerText = task.title;    
+    const taskHeader = $('<h5>');
+    taskHeader.addClass('card-title');
+    taskHeader.addClass('h1');
+    taskHeader.text(task.title);    
     // card content    
-    const taskContent = document.createElement('p');
-    taskContent.classList.add('card-text');
-    taskContent.innerText = task.content; 
+    const taskContent = $('<p>');
+    taskContent.addClass('card-text');
+    taskContent.text(task.content); 
     // card due date
-    const taskDueDate = document.createElement('p');
-    taskDueDate.classList.add('card-text');
-    taskDueDate.innerText = dayjs(task.date).format('dddd, MMMM D YYYY');
+    const taskDueDate = $('<p>');
+    taskDueDate.text(dayjs(task.date).format('dddd, MMMM D YYYY'));
     // card delete button
-    const buttonDeleteEl = document.createElement('button');
-    buttonDeleteEl.classList.add('btn');
-    buttonDeleteEl.classList.add('btn-primary');
-    buttonDeleteEl.innerText = "Delete"; 
+    const buttonDeleteEl = $('<button>');
+    buttonDeleteEl.addClass('btn');
+    buttonDeleteEl.addClass('btn-primary');
+    buttonDeleteEl.text("Delete"); 
     // append the card depending on its status
     if (task.status === "to-do"){
-        todoEl.appendChild(taskCard);
+        todoEl.append(taskCard);
     }else if (task.status === "in-progress"){
-        inProgressCardsEl.appendChild(taskCard);
+        inProgressCardsEl.append(taskCard);
     }else if(task.status === "done"){
-        doneCardsEl.appendChild(taskCard);
+        doneCardsEl.append(taskCard);
     }
     // append the rest of the elements
-    taskCard.appendChild(taskCardBody);
-    taskCardBody.appendChild(taskHeader);
-    taskCardBody.appendChild(taskContent);
-    taskCardBody.appendChild(taskDueDate);
-    taskCardBody.appendChild(buttonDeleteEl);
-    buttonDeleteEl.addEventListener('click', handleDeleteTask);
+    taskCard.append(taskCardBody);
+    taskCardBody.append(taskHeader);
+    taskCardBody.append(taskContent);
+    taskCardBody.append(taskDueDate);
+    taskCardBody.append(buttonDeleteEl);
+
+    buttonDeleteEl.on('click', handleDeleteTask);
 }
 
 // renders the task list on reloads
@@ -107,16 +110,16 @@ function handleAddTask(event){
     $('#formModal').modal('hide');
     // create new task object
     const task = {
-        title : inputTaskTitleEl.value,
-        date : inputDateEl.value,
-        content: inpu1tContentEl.value,
+        title : inputTaskTitleEl.val(),
+        date : inputDateEl.val(),
+        content: inpu1tContentEl.val(),
         status: "to-do",
         id : generateTaskId()
     };
     // zero out old default values
-    inputTaskTitleEl.value = "";
-    inputDateEl.value = "";
-    inpu1tContentEl.value = "";
+    inputTaskTitleEl.val('');
+    inputDateEl.val('');
+    inpu1tContentEl.val('');
     // push new task to list
     tasks.push(task);
     // save to local storage
@@ -142,29 +145,30 @@ function handleDeleteTask(event){
 }
 
 // hanlds the drop task feature
-function handleDrop(event) {
-    event.preventDefault();
-    // append task to new bucket
-    var data = event.dataTransfer.getData("html");
-    const droppedTaskEl = document.getElementById(data);
-    event.currentTarget.children[1].children[0].appendChild(droppedTaskEl)
-   // change status of task
-    const newStatus = event.currentTarget.id;
+function handleDrop(event, ui) {
+    if (this == todoContEl[0]){
+        todoEl.append($(ui.draggable));
+        $(ui.draggable).removeClass("taskBackgroundWhite");
+    }else if (this == inprogressEl[0]){
+        inProgressCardsEl.append($(ui.draggable));
+        $(ui.draggable).removeClass("taskBackgroundWhite");
+
+    }else if (this == doneEl[0]){
+        doneCardsEl.append($(ui.draggable));
+        $(ui.draggable).addClass("taskBackgroundWhite");
+    }
+
+    let data = $(ui.draggable)[0].id;
+    let newStatus = this.id;
+
     for(let i=0; i<tasks.length; i++){
         if ("task" + tasks[i].id == data){
             tasks[i].status = newStatus;
         }
-        if (tasks[i].status == "done"){
-            droppedTaskEl.classList.add("taskBackgroundWhite");
-        }else{
-            try {
-                droppedTaskEl.classList.remove("taskBackgroundWhite");
-            } catch (error) {
-                console.log(error);
-            }
-        }
     }
+
     localStorage.setItem('tasks',JSON.stringify(tasks));
+    return;
 }
 
 // adds a white background to done tasks
@@ -177,15 +181,21 @@ function taskDone(event){
 
 $(document).ready(function () {
     renderTaskList();
-    formModalEl.addEventListener('submit', handleAddTask);
-    todoContEl.addEventListener('drop', handleDrop);
-    inprogressEl.addEventListener('drop', handleDrop);
-    doneEl.addEventListener('drop', handleDrop);
-});
+    formModalEl.on('submit', handleAddTask);
 
-document.addEventListener("dragover", function(event) {
-    event.preventDefault();
-  });
-    document.addEventListener("dragstart", function(event) {
-    event.dataTransfer.setData("html", event.target.id);
+    todoContEl.droppable({
+        drop: handleDrop
+    });
+    todoContEl.on('drop', handleDrop);
+
+    inprogressEl.droppable({
+        drop: handleDrop
+    });
+    inprogressEl.on("drop", handleDrop);
+
+    doneEl.droppable({
+        drop: handleDrop
+    });
+    doneEl.on('drop', handleDrop);
+
 });
